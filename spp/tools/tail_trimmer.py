@@ -45,9 +45,10 @@ class TailTrimmer(ProcessPhase):
         return len(inter) / (len(char_list1) + len(char_list2) - len(inter))
 
     
-    def process_waveform(self, waveform, expected_text):
+    def process_waveform(self, waveform, expected_texts):
         for i in range(len(waveform)):
             y, sr = waveform[i]
+            expected_text = expected_texts[i]
             result = self.pipe({
                 "array": y,
                 "sampling_rate": sr
