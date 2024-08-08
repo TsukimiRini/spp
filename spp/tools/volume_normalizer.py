@@ -5,7 +5,7 @@ import os
 import librosa
 
 class VolumeNormalizer(ProcessPhase):
-    def __init__(self, desired_loudness=-16.0):
+    def __init__(self, desired_loudness=-18.0):
         super().__init__("volume_normalization", InputFormat.WAVEFORM)
         self.desired_loudness = desired_loudness
     

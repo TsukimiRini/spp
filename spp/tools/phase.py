@@ -13,11 +13,11 @@ class ProcessPhase:
         self.label = label
         self.input_format = input_format
     
-    def process(self, obj):
+    def process(self, obj, **kwargs):
         if self.input_format == InputFormat.PATH:
             return self.process_path(obj)
         elif self.input_format == InputFormat.WAVEFORM:
-            return self.process_waveform(obj)
+            return self.process_waveform(obj, **kwargs)
     
     def process_path(self, path:List[str]):
         raise NotImplementedError

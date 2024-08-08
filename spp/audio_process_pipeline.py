@@ -1,7 +1,7 @@
 import librosa
 import os
 import sys
-from .tools import ProcessPhase, InputFormat, NoiseReducer, FrequencyFilter, AudioTrimmer, SilenceRemover, SpeechSplitter, VolumeNormalizer
+from .tools import ProcessPhase, InputFormat, NoiseReducer, FrequencyFilter, AudioTrimmer, SilenceRemover, SpeechSplitter, VolumeNormalizer, TailTrimmer
 from typing import List
 import soundfile as sf
 
@@ -11,17 +11,18 @@ phase_map = {
     "audio_trimmer": AudioTrimmer,
     "silence_remover": SilenceRemover,
     "speech_splitter": SpeechSplitter,
-    "volume_normalizer": VolumeNormalizer
+    "volume_normalizer": VolumeNormalizer,
+    "tail_trimmer": TailTrimmer,
 }
 
 class AudioProcessPipeline:
-    def __init__(self, phase_list:List[str]):
+    def __init__(self, phase_list:List[str], params:dict={}):
         self.phase_list = phase_list
         self.phase_funcs = []
         for phase in phase_list:
-            self.phase_funcs.append(phase_map[phase]())
+            self.phase_funcs.append(phase_map[phase](**params.get(phase, {})))
     
-    def process(self, paths, output_dir):
+    def process(self, paths, output_dir, params:dict={}):
         obj = []
         for path in paths:
             assert os.path.exists(path)
@@ -35,9 +36,9 @@ class AudioProcessPipeline:
                     output_path = os.path.join(output_dir, os.path.basename(paths[i]))
                     temp_paths.append(output_path)
                     sf.write(output_path, y, sr)
-                obj = phase.process(temp_paths)
+                obj = phase.process(temp_paths, **params.get(phase.label, {}))
             elif phase.input_format == InputFormat.WAVEFORM:
-                obj = phase.process(obj)
+                obj = phase.process(obj, **params.get(phase.label, {}))
             
             if isinstance(obj, tuple):
                 obj, paths = obj

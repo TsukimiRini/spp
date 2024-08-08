@@ -5,3 +5,4 @@ from .audio_trimmer import AudioTrimmer
 from .silence_remover import SilenceRemover
 from .speech_splitter import SpeechSplitter
 from .volume_normalizer import VolumeNormalizer
+from .tail_trimmer import TailTrimmer
