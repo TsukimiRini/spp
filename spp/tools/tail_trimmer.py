@@ -42,7 +42,7 @@ class TailTrimmer(ProcessPhase):
         char_list1 = [char for word in list1 for char in word]
         char_list2 = [char for word in list2 for char in word]
         inter = list((Counter(char_list1) & Counter(char_list2)).elements())
-        return len(inter) / (len(char_list1) + len(char_list2) - len(inter))
+        return len(inter) / max(len(char_list1), len(char_list2))
 
     
     def process_waveform(self, waveform, expected_texts):
@@ -59,6 +59,8 @@ class TailTrimmer(ProcessPhase):
             generated_words = [self.trim_word(chunk["text"]).lower() for chunk in result["chunks"]]
             
             tail_idx = len(generated_words) - 1
+            print(f"gen:{generated_words}")
+            print(f"exp:{expected_words}")
             cur_jaccard = self.bag_of_words_sim(expected_words, generated_words)
             while True:
                 tailed_generated_words = generated_words[:-1]
@@ -72,5 +74,9 @@ class TailTrimmer(ProcessPhase):
             
             print(generated_words)
             last_timestamp = result["chunks"][tail_idx]["timestamp"][-1]
+            print(len(y) / sr - last_timestamp)
+            if tail_idx == len(generated_words) - 1 and len(y) / sr - last_timestamp < 0.5:
+                continue
+            last_timestamp += 0.1
             waveform[i] = (y[:int(last_timestamp * sr)], sr)
         return waveform
