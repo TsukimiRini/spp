@@ -1,7 +1,7 @@
 import librosa
 import os
 import sys
-from .tools import ProcessPhase, InputFormat, NoiseReducer, FrequencyFilter, AudioTrimmer, SilenceRemover, SpeechSplitter, VolumeNormalizer, TailTrimmer
+from .tools import ProcessPhase, InputFormat, NoiseReducer, FrequencyFilter, AudioTrimmer, SilenceRemover, SpeechSplitter, VolumeNormalizer, TailTrimmer, SpeedTuner
 from typing import List
 import soundfile as sf
 
@@ -13,6 +13,7 @@ phase_map = {
     "speech_splitter": SpeechSplitter,
     "volume_normalizer": VolumeNormalizer,
     "tail_trimmer": TailTrimmer,
+    "speed_tuner": SpeedTuner
 }
 
 class AudioProcessPipeline:

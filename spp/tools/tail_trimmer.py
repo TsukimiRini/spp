@@ -11,7 +11,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
 class TailTrimmer(ProcessPhase):
-    def __init__(self, model_name="openai/whisper-large-v3"):
+    def __init__(self, model_name="openai/whisper-large-v3", language=None):
         super().__init__("tail_trimmer", InputFormat.WAVEFORM)
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_name, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
@@ -30,11 +30,12 @@ class TailTrimmer(ProcessPhase):
             torch_dtype=torch_dtype,
             device=device,
         )
+        self.language = language
         
     def trim_word(self, text):
         text = text.strip()
         # trim the punctuation at the end of the text
-        while text[-1] in ".,!:;?":
+        while len(text) > 0 and text[-1] in ".,!:;?":
             text = text[:-1].strip()
         return text.strip()
     
@@ -49,10 +50,16 @@ class TailTrimmer(ProcessPhase):
         for i in range(len(waveform)):
             y, sr = waveform[i]
             expected_text = expected_texts[i]
-            result = self.pipe({
-                "array": y,
-                "sampling_rate": sr
-            })
+            if self.language:
+                result = self.pipe({
+                    "array": y,
+                    "sampling_rate": sr
+                }, generate_kwargs={"language": self.language})
+            else:
+                result = self.pipe({
+                    "array": y,
+                    "sampling_rate": sr,
+                })
             expected_words = expected_text.split()
             expected_words = [self.trim_word(word) for word in expected_words]
             expected_words = [word.lower() for word in expected_words if len(word) > 0]

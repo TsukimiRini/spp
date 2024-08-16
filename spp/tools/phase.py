@@ -15,7 +15,7 @@ class ProcessPhase:
     
     def process(self, obj, **kwargs):
         if self.input_format == InputFormat.PATH:
-            return self.process_path(obj)
+            return self.process_path(obj, **kwargs)
         elif self.input_format == InputFormat.WAVEFORM:
             return self.process_waveform(obj, **kwargs)
     
