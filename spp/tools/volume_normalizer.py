@@ -11,9 +11,12 @@ class VolumeNormalizer(ProcessPhase):
     
     def process_waveform(self, waveform):
         for i in range(len(waveform)):
-            y, sr = waveform[i]
-            meter = Meter(sr)
-            loudness = meter.integrated_loudness(y)
-            loudness_normalized_audio = pyln.normalize.loudness(y, loudness, self.desired_loudness)
-            waveform[i] = (loudness_normalized_audio, sr)
+            try:
+                y, sr = waveform[i]
+                meter = Meter(sr)
+                loudness = meter.integrated_loudness(y)
+                loudness_normalized_audio = pyln.normalize.loudness(y, loudness, self.desired_loudness)
+                waveform[i] = (loudness_normalized_audio, sr)
+            except Exception as e:
+                print(f"Error in volume normalization: {e} for waveform {i}")
         return waveform

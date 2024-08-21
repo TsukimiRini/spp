@@ -65,6 +65,9 @@ class TailTrimmer(ProcessPhase):
             expected_words = [word.lower() for word in expected_words if len(word) > 0]
             generated_words = [self.trim_word(chunk["text"]).lower() for chunk in result["chunks"]]
             
+            if "ahh" in expected_words[-1]:
+                continue
+            
             tail_idx = len(generated_words) - 1
             print(f"gen:{generated_words}")
             print(f"exp:{expected_words}")
@@ -80,9 +83,15 @@ class TailTrimmer(ProcessPhase):
                     break
             
             print(generated_words)
+            print(result["chunks"][tail_idx]["timestamp"])
             last_timestamp = result["chunks"][tail_idx]["timestamp"][-1]
+            if last_timestamp == None:
+                continue
             print(len(y) / sr - last_timestamp)
-            if tail_idx == len(generated_words) - 1 and len(y) / sr - last_timestamp < 0.5:
+            barrier = 0.5
+            if self.language == "vi" or self.language == "id":
+                barrier = 1.0
+            if tail_idx == len(generated_words) - 1 and len(y) / sr - last_timestamp < barrier:
                 continue
             last_timestamp += 0.1
             waveform[i] = (y[:int(last_timestamp * sr)], sr)
