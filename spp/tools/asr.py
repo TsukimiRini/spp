@@ -10,9 +10,9 @@ import torch
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
-class TailTrimmer(ProcessPhase):
+class SpeechRecognizer(ProcessPhase):
     def __init__(self, model_name="openai/whisper-large-v3", language=None):
-        super().__init__("tail_trimmer", InputFormat.WAVEFORM, OutputFormat.WAV_PATH)
+        super().__init__("asr", InputFormat.WAVEFORM, OutputFormat.TEXT)
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_name, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
         )
@@ -31,7 +31,7 @@ class TailTrimmer(ProcessPhase):
             device=device,
         )
         self.language = language
-        
+    
     def trim_word(self, text):
         text = text.strip()
         # trim the punctuation at the end of the text
@@ -46,10 +46,10 @@ class TailTrimmer(ProcessPhase):
         return len(inter) / max(len(char_list1), len(char_list2))
 
     
-    def process_waveform(self, waveform, expected_texts):
+    def process_waveform(self, waveform):
+        results = []
         for i in range(len(waveform)):
             y, sr = waveform[i]
-            expected_text = expected_texts[i]
             if self.language:
                 result = self.pipe({
                     "array": y,
@@ -60,39 +60,6 @@ class TailTrimmer(ProcessPhase):
                     "array": y,
                     "sampling_rate": sr,
                 })
-            expected_words = expected_text.split()
-            expected_words = [self.trim_word(word) for word in expected_words]
-            expected_words = [word.lower() for word in expected_words if len(word) > 0]
-            generated_words = [self.trim_word(chunk["text"]).lower() for chunk in result["chunks"]]
-            
-            if "ahh" in expected_words[-1]:
-                continue
-            
-            tail_idx = len(generated_words) - 1
-            print(f"gen:{generated_words}")
-            print(f"exp:{expected_words}")
-            cur_jaccard = self.bag_of_words_sim(expected_words, generated_words)
-            while True:
-                tailed_generated_words = generated_words[:-1]
-                tailed_jaccard = self.bag_of_words_sim(expected_words, tailed_generated_words)
-                if tailed_jaccard > cur_jaccard:
-                    cur_jaccard = tailed_jaccard
-                    generated_words = tailed_generated_words
-                    tail_idx -= 1
-                else:
-                    break
-            
-            print(generated_words)
-            print(result["chunks"][tail_idx]["timestamp"])
-            last_timestamp = result["chunks"][tail_idx]["timestamp"][-1]
-            if last_timestamp == None:
-                continue
-            print(len(y) / sr - last_timestamp)
-            barrier = 0.5
-            if self.language == "vi" or self.language == "id":
-                barrier = 1.0
-            if tail_idx == len(generated_words) - 1 and len(y) / sr - last_timestamp < barrier:
-                continue
-            last_timestamp += 0.1
-            waveform[i] = (y[:int(last_timestamp * sr)], sr)
-        return waveform
+            generated_words = [chunk["text"].strip() for chunk in result["chunks"]]
+            results.append(" ".join(generated_words))
+        return results

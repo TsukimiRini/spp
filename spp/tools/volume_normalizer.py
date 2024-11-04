@@ -1,12 +1,12 @@
 from pyloudnorm import Meter
 import pyloudnorm as pyln
-from .phase import ProcessPhase, InputFormat
+from .phase import ProcessPhase, InputFormat, OutputFormat
 import os
 import librosa
 
 class VolumeNormalizer(ProcessPhase):
     def __init__(self, desired_loudness=-18.0):
-        super().__init__("volume_normalization", InputFormat.WAVEFORM)
+        super().__init__("volume_normalization", InputFormat.WAVEFORM, OutputFormat.WAV_PATH)
         self.desired_loudness = desired_loudness
     
     def process_waveform(self, waveform):

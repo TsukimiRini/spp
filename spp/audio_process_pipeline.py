@@ -1,7 +1,7 @@
 import librosa
 import os
 import sys
-from .tools import ProcessPhase, InputFormat, NoiseReducer, FrequencyFilter, AudioTrimmer, SilenceRemover, SpeechSplitter, VolumeNormalizer, TailTrimmer, SpeedTuner
+from .tools import ProcessPhase, InputFormat, OutputFormat, NoiseReducer, FrequencyFilter, AudioTrimmer, SilenceRemover, SpeechSplitter, VolumeNormalizer, TailTrimmer, SpeedTuner, SpeechRecognizer
 from typing import List
 import soundfile as sf
 
@@ -13,7 +13,8 @@ phase_map = {
     "speech_splitter": SpeechSplitter,
     "volume_normalizer": VolumeNormalizer,
     "tail_trimmer": TailTrimmer,
-    "speed_tuner": SpeedTuner
+    "speed_tuner": SpeedTuner,
+    "asr": SpeechRecognizer
 }
 
 class AudioProcessPipeline:
@@ -41,6 +42,8 @@ class AudioProcessPipeline:
             elif phase.input_format == InputFormat.WAVEFORM:
                 obj = phase.process(obj, **params.get(phase.label, {}))
             
+            if phase.output_format == OutputFormat.TEXT:
+                return obj
             if isinstance(obj, tuple):
                 obj, paths = obj
             

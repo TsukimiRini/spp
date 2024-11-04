@@ -1,4 +1,4 @@
-from .phase import ProcessPhase, InputFormat
+from .phase import ProcessPhase, InputFormat, OutputFormat
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
@@ -6,7 +6,7 @@ import librosa
 
 class SilenceRemover(ProcessPhase):
     def __init__(self):
-        super().__init__("silence_remover", InputFormat.PATH)
+        super().__init__("silence_remover", InputFormat.PATH, OutputFormat.WAV_PATH)
     
     def process_path(self, paths):
         obj = []

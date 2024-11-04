@@ -1,6 +1,6 @@
 from pyloudnorm import Meter
 import pyloudnorm as pyln
-from .phase import ProcessPhase, InputFormat
+from .phase import ProcessPhase, InputFormat, OutputFormat
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 from collections import Counter
 import os
@@ -13,7 +13,7 @@ torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
 class SpeedTuner(ProcessPhase):
     def __init__(self):
-        super().__init__("speed_tuner", InputFormat.PATH)
+        super().__init__("speed_tuner", InputFormat.PATH, OutputFormat.WAV_PATH)
     
     def process_path(self, paths, speed_ratio):
         obj = []

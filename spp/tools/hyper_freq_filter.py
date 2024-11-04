@@ -1,12 +1,12 @@
 import numpy as np
 
-from .phase import ProcessPhase, InputFormat
+from .phase import ProcessPhase, InputFormat, OutputFormat
 from typing import List
 from scipy import signal
 
 class FrequencyFilter(ProcessPhase):
     def __init__(self):
-        super().__init__("frequency_filter", InputFormat.WAVEFORM)
+        super().__init__("frequency_filter", InputFormat.WAVEFORM, OutputFormat.WAV_PATH)
     
     def process_waveform(self, waveform:List):
         # filter out noise for speech audio with low pass filter

@@ -1,4 +1,4 @@
-from .phase import ProcessPhase, InputFormat
+from .phase import ProcessPhase, InputFormat, OutputFormat
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
@@ -7,7 +7,7 @@ import os
 
 class SpeechSplitter(ProcessPhase):
     def __init__(self):
-        super().__init__("speech_splitter", InputFormat.PATH)
+        super().__init__("speech_splitter", InputFormat.PATH, OutputFormat.WAV_PATH)
     
     def process_path(self, paths):
         obj = []
