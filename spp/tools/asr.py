@@ -11,7 +11,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
 class SpeechRecognizer(ProcessPhase):
-    def __init__(self, model_name="openai/whisper-large-v3", language=None):
+    def __init__(self, model_name="openai/whisper-large-v3"):
         super().__init__("asr", InputFormat.WAVEFORM, OutputFormat.TEXT)
         model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_name, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
@@ -30,7 +30,6 @@ class SpeechRecognizer(ProcessPhase):
             torch_dtype=torch_dtype,
             device=device,
         )
-        self.language = language
     
     def trim_word(self, text):
         text = text.strip()
@@ -46,15 +45,15 @@ class SpeechRecognizer(ProcessPhase):
         return len(inter) / max(len(char_list1), len(char_list2))
 
     
-    def process_waveform(self, waveform):
+    def process_waveform(self, waveform, language=None):
         results = []
         for i in range(len(waveform)):
             y, sr = waveform[i]
-            if self.language:
+            if language:
                 result = self.pipe({
                     "array": y,
                     "sampling_rate": sr
-                }, generate_kwargs={"language": self.language})
+                }, generate_kwargs={"language": language})
             else:
                 result = self.pipe({
                     "array": y,
