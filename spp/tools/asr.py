@@ -45,16 +45,16 @@ class SpeechRecognizer(ProcessPhase):
         return len(inter) / max(len(char_list1), len(char_list2))
 
     
-    def process_waveform(self, waveform, language=None):
+    def process_waveform(self, waveform, batch_size=16, language=None):
         results = []
         to_asr = [{
             "array": y,
             "sampling_rate": sr
         } for y, sr in waveform]
         if language:
-            result_list = self.pipe(to_asr, batch_size=16, generate_kwargs={"language": language})
+            result_list = self.pipe(to_asr, batch_size=batch_size, generate_kwargs={"language": language})
         else:
-            result_list = self.pipe(to_asr, batch_size=16)
+            result_list = self.pipe(to_asr, batch_size=batch_size)
         
         for result in result_list:
             generated_words = [chunk["text"].strip() for chunk in result["chunks"]]
